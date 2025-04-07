@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 typedef struct {
   char conteudo; // '#', '.', '%', '@', '$', etc.
@@ -11,6 +12,30 @@ typedef struct {
   int colunas;
   Ponto labirinto[20][20];
 } Labirinto;
+
+// Função de batalha
+int batalha(float * chancevitoria) {
+  float valoraleatorio = (float)rand() / RAND_MAX;
+
+  printf("Iniciando batalha...\n");
+  printf("Chance de vitória: %.0f%%\n", *chancevitoria * 100);
+  printf("Sorteio: %.2f\n", valoraleatorio);
+
+  if (valoraleatorio <= *chancevitoria) {
+    printf("Ganhou a batalha!\n");
+
+    // Aumentando a chance de vitória
+    *chancevitoria += 0.1f;
+    if (*chancevitoria > 1.0f) {
+      *chancevitoria = 1.0f;
+    }
+
+    return 1; 
+  } else {
+    printf("Perdeu a batalha, game over!\n");
+    return 0; 
+  }
+}
 
 // Carregar o labirinto do arquivo
 int imprimirLabirinto(const char *nome_arquivo, Labirinto *lab) {
@@ -82,13 +107,14 @@ int main(int argc, char **argv) {
   }
 
   Labirinto lab;
+  float chancevitoria = 0.5f;
+  int opcao;
+  char nome_saida[100];
+  srand(time(NULL));
 
   if (!imprimirLabirinto(argv[1], &lab)) {
     return 0;
   }
-
-  int opcao;
-  char nome_saida[100];
 
   while (opcao != 4) {
     exibirMenu();
@@ -96,9 +122,27 @@ int main(int argc, char **argv) {
     getchar();
 
     switch (opcao) {
-    case 1:
-      printf("\nCalma aí paizão, ainda não dá pra fazer isso.\n");
+    case 1: {
+      int x, y;
+      printf("\nDigite a linha e a coluna onde deseja tentar: ");
+      scanf("%d %d", &x, &y);
+      getchar();
+
+      if (x >= 0 && x < lab.linhas && y >= 0 && y < lab.colunas) {
+        if (lab.labirinto[x][y].conteudo == '%') {
+          if (!batalha(&chancevitoria)) {
+            return 0; // perdeu o jogo
+          } else {
+            lab.labirinto[x][y].conteudo = '.'; // inimigo derrotado
+          }
+        } else {
+          printf("Não há inimigo nesta posição.\n");
+        }
+      } else {
+        printf("Posição inválida!\n");
+      }
       break;
+    }
     case 2:
       printf("\nCalma aí paizão, ainda não dá pra fazer isso.\n");
       break;
@@ -115,5 +159,5 @@ int main(int argc, char **argv) {
     }
   };
 
-  return 0;
+  return 0;
 }
